@@ -1,4 +1,4 @@
-# CIRCprimerXL
+# FUSIONprimerXL - needs to be updated before use !!!
 Collaborators: Marieke Vromman, Pieter-Jan Volders
 
 Questions concerning the GitHub structure/scripts can be addressed to any of the collaborators.
