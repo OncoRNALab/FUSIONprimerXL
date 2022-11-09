@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 
 import argparse
@@ -30,18 +30,13 @@ for circRNA in input_file:
 
 	ID_str = circ_nr.format(ID)
 
-	chrom = circRNA.split()[0]
-	start = str(circRNA.split()[1])
-	end = str(circRNA.split()[2])
-	circ_str = chrom + '\t' + start + '\t' + end 
-
-	all_circ.append(chrom + ":" + start + "-" + end)
+	all_circ.append(circRNA)
 
 	ind_circ_file = open(ID_str + ".bed", "w")
-	ind_circ_file.write(circ_str + '\t' + ID_str + '\n')
+	ind_circ_file.write(circRNA + '\t' + ID_str + '\n')
 	ind_circ_file.close()
 
-	all_circ_file.write(ID_str + '\t' + circ_str + '\n')
+	all_circ_file.write(ID_str + '\t' + circRNA)
 
 	
 	ID += 1

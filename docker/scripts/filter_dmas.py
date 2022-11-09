@@ -7,29 +7,23 @@ import os
 parser = argparse.ArgumentParser(description='give arguments to filter script')
 parser.add_argument("-A", nargs = 1, required=True, help='input file with circRNA + ID')
 parser.add_argument("-P", nargs = 1, required=True, help='intput file with all primers')
-parser.add_argument('-l', nargs=1, required=True, help='the nr of nucleotides surrounding the BSJ at each side')
-parser.add_argument('-s', nargs=1, required=True, help='the output snp file')
 parser.add_argument('-t', nargs=1, required=True, help='the output folding file from the template')
 parser.add_argument('-a', nargs=1, required=True, help='the output folding file from the amplicon')
 parser.add_argument('-b', nargs=1, required=True, help='the output specificity file')
 parser.add_argument('-p', nargs=1, required=True, help='specificity filter')
-parser.add_argument('-f', nargs=1, required=True, help='filtering SNPs, should be strict or loose')
 
 args = parser.parse_args()
 
 all_circ = open(args.A[0])
-length = int(args.l[0])
-SNP_filter = args.f[0]
 spec_filter = args.p[0]
 
 # get general info circRNA
 
 circRNA = all_circ.read()
 
-chrom = circRNA.split()[0]
-start = int(circRNA.split()[1])
-end = int(circRNA.split()[2])
-circ_ID = circRNA.split()[3]
+sequence = circRNA.split()[0]
+circ_ID = circRNA.split()[1]
+length = len(sequence)/2
 
 
 # get specificity info from file
@@ -77,11 +71,11 @@ if fold_temp_avoid != '[]':
 
 
 # snps
-SNPs = open(args.s[0]).readline()
+""" SNPs = open(args.s[0]).readline()
 
 if SNPs != '[]':
 	SNPs = SNPs.replace('[', "").replace(']', '').split(', ')
-	SNPs = [ int(x) for x in SNPs ]
+	SNPs = [ int(x) for x in SNPs  ] """
 
 # get amplicon folding info into dict
 amp_fold = open(args.a[0])
@@ -101,13 +95,13 @@ amp_fold.close()
 # filter all primers and write to file
 
 all_primers = open(args.P[0])
-primer_file = open("all_primers/filtered_primers_" + circ_ID + '_' + chrom + '_' + str(start) + '_' + str(end) + "_.txt", "a")
+primer_file = open("all_primers/filtered_primers_" + circ_ID + ".txt", "a")
 
 # to make log file
 total_primers = 0
 passed = 0
 failed_spec = 0
-failed_SNP = 0
+#failed_SNP = 0
 failed_str_temp = 0
 failed_str_amp = 0
 design = 1
@@ -121,11 +115,11 @@ for primer in all_primers:
 
 	total_primers += 1
 
-	primer_ID = str(primer.split()[4])
-	FWD_pos = int(primer.split()[7])
-	FWD_len = int(primer.split()[8])
-	REV_pos = int(primer.split()[9])
-	REV_len = int(primer.split()[10])
+	primer_ID = str(primer.split()[1])
+	FWD_pos = int(primer.split()[4])
+	FWD_len = int(primer.split()[5])
+	REV_pos = int(primer.split()[6])
+	REV_len = int(primer.split()[7])
 
 	FWD_poss = range(FWD_pos, FWD_pos + FWD_len)
 	REV_poss = range(REV_pos + 1 - REV_len, REV_pos + 1)
@@ -135,27 +129,7 @@ for primer in all_primers:
 	# check specificity
 	if primer_ID in avoid_spec:
 		filter_str = filter_str + "FAIL_specificity_"
-
-	# check snps
 	
-	if SNP_filter == 'strict':
-		if any(x in FWD_poss for x in SNP_avoid):
-			filter_str = filter_str + "FAIL_snp_F_"
-		if any(x in REV_poss for x in SNP_avoid):
-			filter_str = filter_str + 'FAIL_snp_R_'
-		
-
-	if SNP_filter == 'loose':
-		
-		FWD_poss_5end = FWD_poss[0:int(len(FWD_poss)/2)]
-		REV_poss_5end = REV_poss[int(len(REV_poss)/2):]
-
-		if any(x in FWD_poss_5end for x in SNP_avoid):
-			filter_str = filter_str + "FAIL_snp_F_"
-
-		if any(x in REV_poss_5end for x in SNP_avoid):
-			filter_str = filter_str + 'FAIL_snp_R_'
-
 	# check folding template
 	if any(x in FWD_poss for x in fold_temp_avoid):
 		filter_str = filter_str + 'FAIL_fold_template_F_'
@@ -191,23 +165,21 @@ for primer in all_primers:
 		passed += 1
 	if "FAIL_specificity" in filter_str:
 		failed_spec += 1
-	if "FAIL_snp" in filter_str:
-		failed_SNP += 1
 	if "FAIL_fold_template" in filter_str:
 		failed_str_temp += 1
 	if "FAIL_fold_amplicon" in filter_str:
 		failed_str_amp += 1
 
 
-	primer_file.write(primer.rstrip() + "\t" + filter_str[0:len(filter_str)-1] + "\n")
+	primer_file.write(sequence + "\t" + primer.rstrip() + '\t' + filter_str[0:len(filter_str)-1] + "\n")
 
 primer_file.close()
 all_primers.close()
 
 # print log file
 log_file = open("log_file_" + circ_ID + ".txt", "a")
-log_file.write(circ_ID + '\t' + chrom + '\t' + str(start) + '\t' + str(end) + '\t' + 
+log_file.write(circ_ID + '\t' + 
 	str(design) + "\t" + str(primer_found) + "\t" + str(total_primers) + "\t" + 
-	str(passed) + '\t' + str(failed_spec) + "\t" + str(failed_SNP) + "\t" + 
+	str(passed) + '\t' + str(failed_spec) + "\t" + 
 	str(failed_str_temp) + "\t" + str(failed_str_amp) + '\n' )
 log_file.close()

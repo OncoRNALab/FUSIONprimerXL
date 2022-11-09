@@ -21,7 +21,7 @@ for line in primer_in:
 
 template = primers["SEQUENCE_TEMPLATE"]
 circRNA = primers["SEQUENCE_ID"]
-circ_ID, chrom, start, end = circRNA.split("_")
+circ_ID = circRNA
 nr_p_out = primers["PRIMER_LEFT_NUM_RETURNED"]
 
 primer_in.close()
@@ -84,7 +84,7 @@ for primer_index in range(int(nr_p_out)):
 
 
 	# general primer file (for filtering), first put in dict, will be sorted (see below)
-	all_primers_dict[circ_ID + "\t" + chrom + "\t" + start + "\t" + end + '\t' + str(primer_index) + '\t' + FWD + '\t' + REV + '\t' + 
+	all_primers_dict[circ_ID + '\t' + str(primer_index) + '\t' + FWD + '\t' + REV + '\t' + 
 	FWD_pos + '\t' + FWD_len + '\t' + REV_pos +'\t' + REV_len + '\t' + PRIMER_LEFT_TM + '\t' + PRIMER_RIGHT_TM + '\t' + 
 	PRIMER_LEFT_GC_PERCENT + '\t' + PRIMER_RIGHT_GC_PERCENT + '\t' + amplicon + '\n'] = len(amplicon)
 
