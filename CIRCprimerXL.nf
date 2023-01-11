@@ -19,9 +19,9 @@ params.opt_gc = 50
 params.amp_min = 50
 params.amp_max = 0 // this param is set to 0, so that it can be adjusted depending on temp_l if the user does not supply amp_max
 params.snp_filter = 'strict'
-params.spec_filter = 'strict'
 params.snp_url = 'http://hgdownload.soe.ucsc.edu/gbdb/hg38/snp/dbSnp153Common.bb'
-params.upfront_filter = "yes"
+params.temp_str_filter = 'on'
+params.spec_filter = 'strict'
 
 params.help = false
 
@@ -61,10 +61,10 @@ def helpMessage() {
 	--opt_gc		optimal GC contect of the primers(default: 50)
 	--amp_min		minimum amplicon length (default: 60)
 	--amp_max		maximum amplicon length (default: 0)
-	--spec_filter		when set to 'strict', only 2MM + 3MM are allowed; when set to 'loose', 2MM + 2MM and 2MM + 1MM are also allowed
 	--snp_filter		when set to 'strict', no common SNPs are allowed in primer sequence; when set to 'loose', common SNPs are allowed in 5' first half of primer
 	--snp_url		when using a differente species than human, the correct SNP database url should be provided; alternatively, this paramater can be set to 'off' if no SNP database is available
-	--upfront_filter	when set to 'yes', SNPs and secundary structures are avoided before primer design; when set to 'str', secundary structures are avoided before primer design; when set to 'snp', snp are avoided before primer design; when set to 'no', no filtering before primer design is performed
+	--temp_str_filter
+	--spec_filter		when set to 'strict', only 2MM + 3MM are allowed; when set to 'loose', 2MM + 2MM and 2MM + 1MM are also allowed
 	--output_dir		path to directory where the output files will be saved
 
 
@@ -102,14 +102,15 @@ if (!params.primer3_nr.toString().isNumber()){
 if (params.primer3_nr.toInteger() < 0){
 	exit 1, "Invalid primer3_nr PRIMER_NUM_RETURN: ${params.primer3_nr}. Valid options: any integer > 0. Caution: setting this parameter to a large value will increase running time."}
 
-if (params.snp_filter != "strict" && params.snp_filter != 'loose'){
-	exit 1, "Invalid SNP filter: ${params.snp_filter}. Valid options: 'strict','loose'."}
+if (params.snp_filter != "strict" && params.snp_filter != 'loose' && params.snp_filter != 'off'){
+	exit 1, "Invalid SNP filter: ${params.snp_filter}. Valid options: 'strict','loose' or 'off'."}
+
+if (params.temp_str_filter != "on" && params.temp_str_filter != 'off'){
+	exit 1, "Invalid temp_str_filter filter: ${params.sec_str_filter}. Valid options: 'on','off'."}
 
 if (params.spec_filter != "strict" && params.spec_filter != 'loose'){
 	exit 1, "Invalid specificity filter: ${params.spec_filter}. Valid options: 'strict','loose'."}
 
-if (params.upfront_filter != "yes" && params.upfront_filter != 'str' && params.upfront_filter != 'snp' && params.upfront_filter != 'no'){
-	exit 1, "Invalid SNP filter: ${params.upfront_filter}. Valid options: 'yes','str','snp','no'."}
 
 if (!params.min_tm.toString().isNumber()) {exit 1, " min_tm: ${params.min_tm}. Valid options: any integer > 0."}
 if (!params.max_tm.toString().isNumber()) {exit 1, " max_tm: ${params.max_tm}. Valid options: any integer > 0."}
@@ -137,8 +138,8 @@ OncoRNALab - Marieke Vromman
 https://github.com/OncoRNALab/CIRCprimerXL
 https://hub.docker.com/repository/docker/oncornalab/CIRCprimerXL
 ==============================================
-your input file : ${params.input_bed}
-your output directory : ${params.output_dir}
+your input file: ${params.input_bed}
+your output directory: ${params.output_dir}
 """
 
 // define and run each process
@@ -209,7 +210,7 @@ process folding_template {
 	tuple val (fold_id_t), path('output_NUPACK_*') into out_folding_template
 
 	"""
-	get_sec_str_temp_dmas.py -i in_folding_handle
+	get_sec_str_temp_dmas.py -i in_folding_handle -f $params.temp_str_filter
 	"""
 }
 
@@ -225,7 +226,6 @@ process get_primers {
 	input:
 	tuple val(u_filter_id), path('out_folding_template_upfront_filter_handle'), path('in_primer3_handle') from all_info
 /* 	tuple val(u_filter_id), path('out_folding_template_upfront_filter_handle'), path('in_primer3_handle'), path('out_SNP_upfront_filter_handle') from all_info */
-	val 'upfront_filter' from params.upfront_filter
 	path 'primer_settings_handle' from params.primer_settings
  
 	output:
@@ -235,7 +235,7 @@ process get_primers {
 	path('output_primer3_*')
 
 	"""
-	upfront_filter_dmas.py -i in_primer3_handle -a out_folding_template_upfront_filter_handle -f $upfront_filter
+	upfront_filter_dmas.py -i in_primer3_handle -a out_folding_template_upfront_filter_handle -f $params.temp_str_filter
 	/bin/primer3-2.5.0/src/primer3_core --output=output_primer3_${u_filter_id}.txt --p3_settings_file=$primer_settings_handle primer3_file*
 	split_primers_dmas.py -i output_primer3_${u_filter_id}.txt
 	"""
@@ -283,6 +283,7 @@ process filter_primers {
 	input:
 	tuple val(filter_id), path('circ_file_handle'), path('out_folding_template_handle'), path('out_folding_amplicon_handle'), path('all_primers_per_circ_handle') from gather_filter
 	file 'out_spec_primer_handle' from out_spec_primer
+
 	// val 'snp_filter_handle' from params.snp_filter
 	
 	output:
@@ -308,7 +309,6 @@ process print_output {
 	file 'log_file_per_circ*' from log_file_per_circ.collect()
 	file 'start_time_file' from start_time
 	path 'all_primer_files' from out_dir.collect()
-	val 'upfront_filter' from params.upfront_filter
 	path 'all_circ_file' from all_cic
 
 
@@ -323,8 +323,8 @@ process print_output {
 	cp all_primer_files*/* all_primers/
 	echo "fusions_seq	seq_id	primer_ID	FWD_primer	REV_primer	FWD_pos	FWD_length	REV_pos	REV_length	FWD_Tm	REV_Tm	FWD_GC	REV_GC	amplicon	PASS" > filtered_primers.txt
 	cat results_per_circ* >> filtered_primers.txt
-	echo "circ_ID	design	primer_found	total_primer_pairs	passed	failed_spec	failed_sec_str_temp	failed_sec_str_amp" > log_file.txt
+	echo "circ_ID	design	primer_found	total_primer_pairs	passed	failed_spec	failed_sec_str_amp" > log_file.txt
 	cat log_file_per_circ* >> log_file.txt
-	summary_run_dmas.py -l log_file.txt -s start_time_file -o . -u $upfront_filter -a all_circ_file
+	summary_run_dmas.py -l log_file.txt -s start_time_file -o . -a all_circ_file
 	"""
 }

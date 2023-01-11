@@ -33,7 +33,7 @@ for line in primer3_file:
 avoid_range = []
 
 # if this filter is on
-if filter_on == 'yes' or filter_on == "str":
+if filter_on == "on":
 	folding_file = open(args.a[0])
 
 	# get folding info
@@ -79,7 +79,7 @@ if filter_on == 'yes' or filter_on == "str":
 		for snp in SNPs:
 			avoid_range.append([snp, 1]) """
 
-if filter_on != "no":
+if filter_on != "off":
 		avoid_range_str = "SEQUENCE_EXCLUDED_REGION="
 
 		for element in avoid_range:

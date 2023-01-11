@@ -57,26 +57,6 @@ for i in range(0, len(all_lines) - 1, 2):
 			avoid_spec.append(all_lines[i].split("_")[2])
 
 
-# get folding template from file
-fold_temp = open(args.t[0])
-
-skip = fold_temp.readline()
-skip = fold_temp.readline()
-skip = fold_temp.readline()
-fold_temp_avoid = fold_temp.readline()
-
-if fold_temp_avoid != '[]':
-	fold_temp_avoid = fold_temp_avoid.replace('[', "").replace(']', '').split(', ')
-	fold_temp_avoid = [ int(x) for x in fold_temp_avoid ]
-
-
-# snps
-""" SNPs = open(args.s[0]).readline()
-
-if SNPs != '[]':
-	SNPs = SNPs.replace('[', "").replace(']', '').split(', ')
-	SNPs = [ int(x) for x in SNPs  ] """
-
 # get amplicon folding info into dict
 amp_fold = open(args.a[0])
 amp_fold_avoid = {}
@@ -129,12 +109,6 @@ for primer in all_primers:
 	# check specificity
 	if primer_ID in avoid_spec:
 		filter_str = filter_str + "FAIL_specificity_"
-	
-	# check folding template
-	if any(x in FWD_poss for x in fold_temp_avoid):
-		filter_str = filter_str + 'FAIL_fold_template_F_'
-	if any(x in REV_poss for x in fold_temp_avoid):
-		filter_str = filter_str + 'FAIL_fold_template_R_'
 
 	# check folding amplicon
 
@@ -180,6 +154,5 @@ all_primers.close()
 log_file = open("log_file_" + circ_ID + ".txt", "a")
 log_file.write(circ_ID + '\t' + 
 	str(design) + "\t" + str(primer_found) + "\t" + str(total_primers) + "\t" + 
-	str(passed) + '\t' + str(failed_spec) + "\t" + 
-	str(failed_str_temp) + "\t" + str(failed_str_amp) + '\n' )
+	str(passed) + '\t' + str(failed_spec) + "\t" + str(failed_str_amp) + '\n' )
 log_file.close()
