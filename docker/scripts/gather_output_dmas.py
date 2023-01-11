@@ -28,7 +28,7 @@ else:
 			output.write(primer.rstrip() + "\t" + "\n")
 			primer_found = 'yes'
 	if primer_found == "no":
-		output.write(('\t'.join(primer.split()[0:4])) + "\tno primer pair passed all filters for this circRNA\n")
+		output.write(('\t'.join(primer.split()[0:2])) + "\tno primer pair passed all filters for this circRNA\n")
 
 
 output.close()
