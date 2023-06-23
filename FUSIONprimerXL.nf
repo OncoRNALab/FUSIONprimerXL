@@ -18,8 +18,6 @@ params.max_gc = 80
 params.opt_gc = 50
 params.amp_min = 50
 params.amp_max = 0 // this param is set to 0, so that it can be adjusted depending on temp_l if the user does not supply amp_max
-params.snp_filter = 'strict'
-params.snp_url = 'http://hgdownload.soe.ucsc.edu/gbdb/hg38/snp/dbSnp153Common.bb'
 params.temp_str_filter = 'on'
 params.spec_filter = 'strict'
 
@@ -61,9 +59,7 @@ def helpMessage() {
 	--opt_gc		optimal GC contect of the primers(default: 50)
 	--amp_min		minimum amplicon length (default: 60)
 	--amp_max		maximum amplicon length (default: 0)
-	--snp_filter		when set to 'strict', no common SNPs are allowed in primer sequence; when set to 'loose', common SNPs are allowed in 5' first half of primer
-	--snp_url		when using a differente species than human, the correct SNP database url should be provided; alternatively, this paramater can be set to 'off' if no SNP database is available
-	--temp_str_filter
+	--temp_str_filter	when set to 'on', secunday structures in the tample are avoided during primer design; when set to 'off', this is not done (default: 'on')
 	--spec_filter		when set to 'strict', only 2MM + 3MM are allowed; when set to 'loose', 2MM + 2MM and 2MM + 1MM are also allowed
 	--output_dir		path to directory where the output files will be saved
 
@@ -102,9 +98,6 @@ if (!params.primer3_nr.toString().isNumber()){
 if (params.primer3_nr.toInteger() < 0){
 	exit 1, "Invalid primer3_nr PRIMER_NUM_RETURN: ${params.primer3_nr}. Valid options: any integer > 0. Caution: setting this parameter to a large value will increase running time."}
 
-if (params.snp_filter != "strict" && params.snp_filter != 'loose' && params.snp_filter != 'off'){
-	exit 1, "Invalid SNP filter: ${params.snp_filter}. Valid options: 'strict','loose' or 'off'."}
-
 if (params.temp_str_filter != "on" && params.temp_str_filter != 'off'){
 	exit 1, "Invalid temp_str_filter filter: ${params.sec_str_filter}. Valid options: 'on','off'."}
 
@@ -136,7 +129,7 @@ FUSIONprimerXL pipeline
 ==============================================
 OncoRNALab - Marieke Vromman
 https://github.com/OncoRNALab/FUSIONprimerXL
-https://hub.docker.com/repository/docker/oncornalab/FUSIONprimerXL
+https://hub.docker.com/repository/docker/oncornalab/primerxl_circ/
 ==============================================
 your input file: ${params.input_seq}
 your output directory: ${params.output_dir}
@@ -162,7 +155,7 @@ process split_input {
 }
 
 
-process get_seq {
+process generate_in_files {
 	input:
 	file ind_fusion_file_handle from ind_fusion_file.flatten()
 
@@ -172,7 +165,7 @@ process get_seq {
 	tuple val("${ind_fusion_file_handle.baseName}"), path('input_filter*') into in_filter
 
 	"""
-	02_get_seq_fastahack.py -i $ind_fusion_file_handle -n $params.primer3_diff -p $params.primer3_nr -a $params.min_tm -b $params.max_tm -c $params.opt_tm -d $params.diff_tm -e $params.min_gc -f $params.max_gc -g $params.opt_gc -j $params.amp_min -k $params.amp_max
+	02_generate_in_files.py -i $ind_fusion_file_handle -n $params.primer3_diff -p $params.primer3_nr -a $params.min_tm -b $params.max_tm -c $params.opt_tm -d $params.diff_tm -e $params.min_gc -f $params.max_gc -g $params.opt_gc -j $params.amp_min -k $params.amp_max
 	"""
 }
 
