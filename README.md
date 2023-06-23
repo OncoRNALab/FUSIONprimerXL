@@ -40,9 +40,9 @@ Nextflow version 20.10.0 is available on all clusters (swalot, skitty, victini, 
 
 ```
 qsub -I -l nodes=1:ppn=16 -l walltime=04:00:00
-cd $VSC_SCRATCH_VO_USER/CIRCprimerXL/
+cd $VSC_SCRATCH_VO_USER/FUSIONprimerXL/
 module load Nextflow/20.10.0
-nextflow run CIRCprimerXL.nf --help
+nextflow run FUSIONprimerXL.nf --help
 ```
 
 
@@ -96,7 +96,7 @@ In the output folder, you will find
 <ul>
   <li>filtered_primers.txt, a file containing one selected primer pair per fusion (see below for column details)</li>
   <li>log_file.txt, </li>
-  <li>summary_run.txt, </li>
+  <li>summary_run.txt </li>
   <li>all_primers directory</li>
   <li>primer3_details directory</li>
 </ul>
