@@ -155,7 +155,7 @@ process split_circRNAs {
 	path 'all_circ.txt' into all_cic
 
 	"""
-	split_circRNAs_dmas.py -i $input_bed_handle
+	01_split_input.py -i $input_bed_handle
 	python3 -c 'from datetime import datetime; print(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))' > start_time.txt
 	"""
 
@@ -176,7 +176,7 @@ process get_seq {
 	tuple val("${ind_circ_file_handle.baseName}"), path('annotation*.txt') into annotation_splice */
 
 	"""
-	get_circ_seq_fastahack2_dmas.py -i $ind_circ_file_handle -n $params.primer3_diff -p $params.primer3_nr -a $params.min_tm -b $params.max_tm -c $params.opt_tm -d $params.diff_tm -e $params.min_gc -f $params.max_gc -g $params.opt_gc -j $params.amp_min -k $params.amp_max
+	02_get_seq_fastahack.py -i $ind_circ_file_handle -n $params.primer3_diff -p $params.primer3_nr -a $params.min_tm -b $params.max_tm -c $params.opt_tm -d $params.diff_tm -e $params.min_gc -f $params.max_gc -g $params.opt_gc -j $params.amp_min -k $params.amp_max
 	"""
 }
 
@@ -210,7 +210,7 @@ process folding_template {
 	tuple val (fold_id_t), path('output_NUPACK_*') into out_folding_template
 
 	"""
-	get_sec_str_temp_dmas.py -i in_folding_handle -f $params.temp_str_filter
+	03_get_sec_str_temp.py -i in_folding_handle -f $params.temp_str_filter
 	"""
 }
 
@@ -235,9 +235,9 @@ process get_primers {
 	path('output_primer3_*')
 
 	"""
-	upfront_filter_dmas.py -i in_primer3_handle -a out_folding_template_upfront_filter_handle -f $params.temp_str_filter
+	04_upfront_filter.py -i in_primer3_handle -a out_folding_template_upfront_filter_handle -f $params.temp_str_filter
 	/bin/primer3-2.5.0/src/primer3_core --output=output_primer3_${u_filter_id}.txt --p3_settings_file=$primer_settings_handle primer3_file*
-	split_primers_dmas.py -i output_primer3_${u_filter_id}.txt
+	05_split_primers.py -i output_primer3_${u_filter_id}.txt
 	"""
 }
 
@@ -250,7 +250,7 @@ process folding_amplicon {
 	tuple val(fold_id_a), path('output_NUPACK_*') into out_folding_amplicon
 
 	"""
-	get_sec_str_amp_dmas.py -i $amplicon_folding_in_handle
+	06_get_sec_str_amp.py -i $amplicon_folding_in_handle
 	"""
 }
 
@@ -293,8 +293,8 @@ process filter_primers {
 
 	"""
 	mkdir all_primers
-	filter_dmas.py -A circ_file_handle -P all_primers_per_circ_handle -b out_spec_primer_handle -t out_folding_template_handle -a out_folding_amplicon_handle -p $params.spec_filter
-	gather_output_dmas.py -i all_primers/filtered_primers_*
+	07_filter.py -A circ_file_handle -P all_primers_per_circ_handle -b out_spec_primer_handle -t out_folding_template_handle -a out_folding_amplicon_handle -p $params.spec_filter
+	08_gather_output.py -i all_primers/filtered_primers_*
 	"""
 }
 
@@ -325,6 +325,6 @@ process print_output {
 	cat results_per_circ* >> filtered_primers.txt
 	echo "circ_ID	design	primer_found	total_primer_pairs	passed	failed_spec	failed_sec_str_amp" > log_file.txt
 	cat log_file_per_circ* >> log_file.txt
-	summary_run_dmas.py -l log_file.txt -s start_time_file -o . -a all_circ_file
+	09_summary_run.py -l log_file.txt -s start_time_file -o . -a all_circ_file
 	"""
 }
