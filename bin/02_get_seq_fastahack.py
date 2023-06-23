@@ -8,7 +8,7 @@ import math
 
 # # get info on BSJ seq
 parser = argparse.ArgumentParser(description='give arguments to main primer_xc script')
-parser.add_argument('-i', nargs=1, required=True, help='input circRNA bed file, 0-based')
+parser.add_argument('-i', nargs=1, required=True, help='input fusions sequence file')
 parser.add_argument('-p', nargs=1, required=True, help='nr of primers')
 parser.add_argument('-n', nargs=1, required=True, help='nr of difference between primers')
 
@@ -25,17 +25,17 @@ parser.add_argument('-k', nargs=1, required=True, help='max amp length')
 
 
 args = parser.parse_args()
-input_bed = open(args.i[0])
+input_file = open(args.i[0])
 nr = args.p[0]
 diff = args.n[0]
 
-# # read first (and only) line of input bed file
-circRNA = input_bed.read()
+# # read first (and only) line of input file
+fusion = input_file.read()
 
 # retrieve chrom start end info
-sequence_f = circRNA.split()[0]
+sequence_f = fusion.split()[0]
 sequence = sequence_f.replace('*', '')
-circ_ID = circRNA.split()[1]
+fusion_ID = fusion.split()[1]
 
 # get position of fusion
 f_pos = sequence_f.find('*')
@@ -49,8 +49,8 @@ if int(amp_max) == 0:
 
 # ## make a txt file for primer design (sequence based)
 
-output = open("input_primer3_" + circ_ID + ".txt", "w")
-output.write("SEQUENCE_ID=" + circ_ID + "\n")
+output = open("input_primer3_" + fusion_ID + ".txt", "w")
+output.write("SEQUENCE_ID=" + fusion_ID + "\n")
 output.write("SEQUENCE_TEMPLATE=" + sequence + "\n")
 output.write("SEQUENCE_TARGET=" + str(f_pos) + ",1\nPRIMER_NUM_RETURN=" + nr + "\n")
 output.write("PRIMER_MIN_THREE_PRIME_DISTANCE=" + diff + '\n')
@@ -67,22 +67,15 @@ output.close()
 
 # ## make fasta file folding (sequence based)
 
-output = open("input_NUPACK_" + circ_ID + ".fasta", "w")
-output.write("> " + circ_ID + "\n")
+output = open("input_NUPACK_" + fusion_ID + ".fasta", "w")
+output.write("> " + fusion_ID + "\n")
 output.write(sequence + "\n")
 output.close()
 
-
-# ## make a bed file for SNPs (0-based => use original bed file annotation)
-
-""" output = open("input_SNP_" + circ_ID + ".bed", 'w')
-output.write(circRNA + '\t' + str(int(length)) + '\n')
-output.close() """
-
 # ## make file for filtering
 
-output = open("input_filter_" + circ_ID + ".bed", 'w')
-output.write(circRNA + '\n')
+output = open("input_filter_" + fusion_ID + ".txt", 'w')
+output.write(fusion + '\n')
 output.close()
 
 

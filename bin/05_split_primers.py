@@ -11,7 +11,7 @@ primer_in = open(input_primers)
 
 primers = {}
 
-circ_info_keys = ("SEQUENCE_ID", "SEQUENCE_TEMPLATE", "SEQUENCE_TARGET")
+fusion_info_keys = ("SEQUENCE_ID", "SEQUENCE_TEMPLATE", "SEQUENCE_TARGET")
 
 # read all info into dictionary
 for line in primer_in:
@@ -20,27 +20,26 @@ for line in primer_in:
 	primers[key] = value
 
 template = primers["SEQUENCE_TEMPLATE"]
-circRNA = primers["SEQUENCE_ID"]
-circ_ID = circRNA
+fusion_ID = primers["SEQUENCE_ID"]
 nr_p_out = primers["PRIMER_LEFT_NUM_RETURNED"]
 
 primer_in.close()
 
 
 # read general info into file
-general_info = open("general_primer_design_info_" + circ_ID + ".txt", "a")
+general_info = open("general_primer_design_info_" + fusion_ID + ".txt", "a")
 for info in primers:
-	if "_NUM_" in info or "_EXPLAIN" in info or any(x in info for x in circ_info_keys):
+	if "_NUM_" in info or "_EXPLAIN" in info or any(x in info for x in fusion_info_keys):
 		general_info.write(info + '=' + str(primers[info]) +'\n')
 
 general_info.close()
 
 # make file for bowtie
-primer_file = open("primer_spec_input_" + circ_ID + ".txt", "a")
+primer_file = open("primer_spec_input_" + fusion_ID + ".txt", "a")
 
 # make general file with list primers
-all_primers = open("all_primers_" + circ_ID + ".txt", 'w')
-all_amplicon = open("amplicon_folding_input_" + circ_ID + ".txt", 'w')
+all_primers = open("all_primers_" + fusion_ID + ".txt", 'w')
+all_amplicon = open("amplicon_folding_input_" + fusion_ID + ".txt", 'w')
 all_primers_dict = {}
 
 for primer_index in range(int(nr_p_out)):
@@ -58,20 +57,20 @@ for primer_index in range(int(nr_p_out)):
 
 	# bowtie input file
 	# write FWD + REV
-	primer_file.write(circ_ID + "_primer_" + str(primer_index) + "_FWD_REV" + "\t")
+	primer_file.write(fusion_ID + "_primer_" + str(primer_index) + "_FWD_REV" + "\t")
 	primer_file.write(FWD + "\t" + FWD_qual + "\t" + REV + "\t" + REV_qual + "\n")
 
 	# write  REV + FWD
-	primer_file.write(circ_ID + "_primer_" + str(primer_index) + "_REV_FWD" + "\t")
+	primer_file.write(fusion_ID + "_primer_" + str(primer_index) + "_REV_FWD" + "\t")
 	primer_file.write(REV + "\t" + REV_qual + "\t" + FWD + "\t" + FWD_qual + "\n")
 
 
 	# write FWD + FWD
-	primer_file.write(circ_ID + "_primer_" + str(primer_index) + "_FWD_FWD" + "\t")
+	primer_file.write(fusion_ID + "_primer_" + str(primer_index) + "_FWD_FWD" + "\t")
 	primer_file.write(FWD + "\t" + FWD_qual + "\t" + FWD + "\t" + FWD_qual + "\n")
 
 	# write REV + REV
-	primer_file.write(circ_ID + "_primer_" + str(primer_index) + "_REV_REV" + "\t")
+	primer_file.write(fusion_ID + "_primer_" + str(primer_index) + "_REV_REV" + "\t")
 	primer_file.write(REV + "\t" + REV_qual + "\t" + REV + "\t" + REV_qual + "\n")
 
 	# get amplicon and make file for NUPACK
@@ -80,11 +79,11 @@ for primer_index in range(int(nr_p_out)):
 	amplicon = template[int(FWD_pos):int(REV_pos) + 1]
 
 
-	all_amplicon.write("> amplicon_" + circ_ID + "_primer" + str(primer_index) + "_" + amplicon + "\n")
+	all_amplicon.write("> amplicon_" + fusion_ID + "_primer" + str(primer_index) + "_" + amplicon + "\n")
 
 
 	# general primer file (for filtering), first put in dict, will be sorted (see below)
-	all_primers_dict[circ_ID + '\t' + str(primer_index) + '\t' + FWD + '\t' + REV + '\t' + 
+	all_primers_dict[fusion_ID + '\t' + str(primer_index) + '\t' + FWD + '\t' + REV + '\t' + 
 	FWD_pos + '\t' + FWD_len + '\t' + REV_pos +'\t' + REV_len + '\t' + PRIMER_LEFT_TM + '\t' + PRIMER_RIGHT_TM + '\t' + 
 	PRIMER_LEFT_GC_PERCENT + '\t' + PRIMER_RIGHT_GC_PERCENT + '\t' + amplicon + '\n'] = len(amplicon)
 

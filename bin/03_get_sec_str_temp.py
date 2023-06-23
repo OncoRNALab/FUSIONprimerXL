@@ -12,13 +12,13 @@ input_file = args.i[0]
 
 # read in sequence
 sequence_file = open(input_file)
-circ_ID = sequence_file.readline().rstrip().replace('> ', '')
+fusion_ID = sequence_file.readline().rstrip().replace('> ', '')
 sequence = []
 sequence.append(sequence_file.readline().rstrip())
 
 # make ouput file
-output = open('output_NUPACK_temp_' + circ_ID + '.txt', 'a')
-output.write(circ_ID + '\n')
+output = open('output_NUPACK_temp_' + fusion_ID + '.txt', 'a')
+output.write(fusion_ID + '\n')
 
 if args.f[0] == "on":
 	# make model

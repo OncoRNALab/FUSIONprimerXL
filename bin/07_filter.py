@@ -5,7 +5,7 @@ import argparse
 import os
 
 parser = argparse.ArgumentParser(description='give arguments to filter script')
-parser.add_argument("-A", nargs = 1, required=True, help='input file with circRNA + ID')
+parser.add_argument("-A", nargs = 1, required=True, help='input file with fusion + ID')
 parser.add_argument("-P", nargs = 1, required=True, help='intput file with all primers')
 parser.add_argument('-t', nargs=1, required=True, help='the output folding file from the template')
 parser.add_argument('-a', nargs=1, required=True, help='the output folding file from the amplicon')
@@ -14,15 +14,15 @@ parser.add_argument('-p', nargs=1, required=True, help='specificity filter')
 
 args = parser.parse_args()
 
-all_circ = open(args.A[0])
+all_fusion = open(args.A[0])
 spec_filter = args.p[0]
 
-# get general info circRNA
+# get general info fusion
 
-circRNA = all_circ.read()
+fusion = all_fusion.read()
 
-sequence = circRNA.split()[0]
-circ_ID = circRNA.split()[1]
+sequence = fusion.split()[0]
+fusion_ID = fusion.split()[1]
 length = len(sequence)/2
 
 
@@ -40,7 +40,7 @@ spec.close()
 for i in range(0, len(all_lines) - 1, 2):
 	fwd_spec = all_lines[i].split()
 	rev_spec = all_lines[i+1].split()
-	if circ_ID == all_lines[i].split("_")[0]:
+	if fusion_ID == all_lines[i].split("_")[0]:
 		fwd_MM, rev_MM = 0, 0
 		if len(fwd_spec) > 7:
 			fwd_MM = fwd_spec[7].count('>')
@@ -75,7 +75,7 @@ amp_fold.close()
 # filter all primers and write to file
 
 all_primers = open(args.P[0])
-primer_file = open("all_primers/filtered_primers_" + circ_ID + ".txt", "a")
+primer_file = open("all_primers/filtered_primers_" + fusion_ID + ".txt", "a")
 
 # to make log file
 total_primers = 0
@@ -151,8 +151,8 @@ primer_file.close()
 all_primers.close()
 
 # print log file
-log_file = open("log_file_" + circ_ID + ".txt", "a")
-log_file.write(circ_ID + '\t' + 
+log_file = open("log_file_" + fusion_ID + ".txt", "a")
+log_file.write(fusion_ID + '\t' + 
 	str(design) + "\t" + str(primer_found) + "\t" + str(total_primers) + "\t" + 
 	str(passed) + '\t' + str(failed_spec) + "\t" + str(failed_str_amp) + '\n' )
 log_file.close()

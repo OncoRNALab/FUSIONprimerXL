@@ -5,7 +5,7 @@
 params.index_bowtie = "$baseDir/assets/GRCh38/index_bowtie"
 params.index_bowtie_name = "GRCh38_dna"
 params.primer_settings = "$baseDir/assets/primer3plus_settings.txt"
-params.input_bed = "example/path"
+params.input_seq = "example/path"
 
 params.primer3_diff = 1
 params.primer3_nr = 20
@@ -26,7 +26,7 @@ params.spec_filter = 'strict'
 params.help = false
 
 // required parameters
-input_bed = file(params.input_bed)
+input_seq = file(params.input_seq)
 index_bowtie = file(params.index_bowtie)
 
 // help message
@@ -37,13 +37,13 @@ def helpMessage() {
 	Usage:
 	
 	The typical command for running the pipeline is as follows:
-	nextflow run CIRCprimerXL.nf -profile singularity
+	nextflow run FUSIONprimerXL.nf -profile singularity
 	
 	Mandatory nextflow arguments:
 	-profile 		set to 'local' when running locally, set to 'singularity' when running on the HPC
 
 	Mandatory pipeline arguments:
-	--input_bed		path to input file with circRNAs in bed format (0-based annotation)
+	--input_seq		path to input file with fusion sequences (the fusion should be indicated with a *)
 	--index_bowtie		path to bowtie genome index directory
 	--index_bowtie_name	the basename of the Bowtie index to be searched (the name of any of the index files up to but not including the final .1.ebwt / .rev.1.ebwt / ...)
 
@@ -78,8 +78,8 @@ if (params.help) {
 
 // check if all parameters are provided correctly
 
-if (!file(params.input_bed).exists()) {
-	exit 1, "Input bed file not found: ${params.input_bed}"}
+if (!file(params.input_seq).exists()) {
+	exit 1, "Input fusion sequence file not found: ${params.input_seq}"}
 
 if (!file(params.output_dir).exists()) {
 	exit 1, "Output directory not found: ${params.output_dir}"}
@@ -132,30 +132,30 @@ if (params.opt_gc.toInteger() > params.max_gc.toInteger() || params.opt_gc.toInt
 
 log.info """\
 ==============================================
-CIRCprimerXL pipeline
+FUSIONprimerXL pipeline
 ==============================================
 OncoRNALab - Marieke Vromman
-https://github.com/OncoRNALab/CIRCprimerXL
-https://hub.docker.com/repository/docker/oncornalab/CIRCprimerXL
+https://github.com/OncoRNALab/FUSIONprimerXL
+https://hub.docker.com/repository/docker/oncornalab/FUSIONprimerXL
 ==============================================
-your input file: ${params.input_bed}
+your input file: ${params.input_seq}
 your output directory: ${params.output_dir}
 """
 
 // define and run each process
 
-process split_circRNAs {
+process split_input {
 
 	input:
-	path 'input_bed_handle' from input_bed
+	path 'input_seq_handle' from input_seq
 
 	output:
-	path 'circ*' into ind_circ_file
+	path 'fusion*' into ind_fusion_file
 	path 'start_time.txt' into start_time
-	path 'all_circ.txt' into all_cic
+	path 'all_fusion.txt' into all_cic
 
 	"""
-	01_split_input.py -i $input_bed_handle
+	01_split_input.py -i $input_seq_handle
 	python3 -c 'from datetime import datetime; print(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))' > start_time.txt
 	"""
 
@@ -164,41 +164,19 @@ process split_circRNAs {
 
 process get_seq {
 	input:
-	file ind_circ_file_handle from ind_circ_file.flatten()
+	file ind_fusion_file_handle from ind_fusion_file.flatten()
 
 	output:
-	tuple val("${ind_circ_file_handle.baseName}"), path('input_primer3*') into in_primer3
-	tuple val("${ind_circ_file_handle.baseName}"), path('input_NUPACK*') into in_folding
-	// tuple val("${ind_circ_file_handle.baseName}"), path('input_SNP*') into in_SNP
-	tuple val("${ind_circ_file_handle.baseName}"), path('input_filter*') into in_filter
-/* 	tuple val("${ind_circ_file_handle.baseName}"), path('fasta_in.txt') into fasta_SNP
-	tuple val("${ind_circ_file_handle.baseName}"), path('fasta_track.txt') into fasta_track
-	tuple val("${ind_circ_file_handle.baseName}"), path('annotation*.txt') into annotation_splice */
+	tuple val("${ind_fusion_file_handle.baseName}"), path('input_primer3*') into in_primer3
+	tuple val("${ind_fusion_file_handle.baseName}"), path('input_NUPACK*') into in_folding
+	tuple val("${ind_fusion_file_handle.baseName}"), path('input_filter*') into in_filter
 
 	"""
-	02_get_seq_fastahack.py -i $ind_circ_file_handle -n $params.primer3_diff -p $params.primer3_nr -a $params.min_tm -b $params.max_tm -c $params.opt_tm -d $params.diff_tm -e $params.min_gc -f $params.max_gc -g $params.opt_gc -j $params.amp_min -k $params.amp_max
+	02_get_seq_fastahack.py -i $ind_fusion_file_handle -n $params.primer3_diff -p $params.primer3_nr -a $params.min_tm -b $params.max_tm -c $params.opt_tm -d $params.diff_tm -e $params.min_gc -f $params.max_gc -g $params.opt_gc -j $params.amp_min -k $params.amp_max
 	"""
 }
 
 
-/* process get_SNPs {
-
-	input:
-	tuple val(snp_id), path('in_SNP_handle') from in_SNP
-	tuple val(snp_id), path('fasta_SNP_handle') from fasta_SNP
-	tuple val(snp_id), path('fasta_track_handle') from fasta_track
-
-
-	output:
-	tuple val(snp_id), path('output_SNP*') into out_SNP_upfront_filter
-	tuple val(snp_id), path('output_SNP*') into out_SNP
-
-
-	"""
-	get_SNPs.py -i in_SNP_handle -u $params.snp_url -f fasta_SNP_handle -t fasta_track_handle
-	"""
-	
-} */
 
 process folding_template {
 
@@ -225,13 +203,12 @@ process get_primers {
 	
 	input:
 	tuple val(u_filter_id), path('out_folding_template_upfront_filter_handle'), path('in_primer3_handle') from all_info
-/* 	tuple val(u_filter_id), path('out_folding_template_upfront_filter_handle'), path('in_primer3_handle'), path('out_SNP_upfront_filter_handle') from all_info */
 	path 'primer_settings_handle' from params.primer_settings
  
 	output:
-	tuple val(u_filter_id), path('amplicon_folding_input_circ*') into amplicon_folding_in
-	tuple val(u_filter_id), path('all_primers_circ*') into all_primers_per_circ
-	path('primer_spec_input_circ*') into primer_spec_input_per_circ
+	tuple val(u_filter_id), path('amplicon_folding_input_fusion*') into amplicon_folding_in
+	tuple val(u_filter_id), path('all_primers_fusion*') into all_primers_per_fusion
+	path('primer_spec_input_fusion*') into primer_spec_input_per_fusion
 	path('output_primer3_*')
 
 	"""
@@ -263,37 +240,35 @@ process specificity_primers {
 
 	input:
 	path 'bowtie_index' from index_bowtie
-	file 'primer_spec_input_*' from primer_spec_input_per_circ.collect()
+	file 'primer_spec_input_*' from primer_spec_input_per_fusion.collect()
 
 	output:
 	file 'out_spec_primer.txt' into out_spec_primer
 
 	script:
 	"""
-	cat primer_spec_input_* > primer_spec_input_all_circ.txt
-	/bin/bowtie-1.3.0-linux-x86_64/bowtie --tryhard -X1000 -v3 --quiet -x bowtie_index/$params.index_bowtie_name --threads ${task.cpus} --12 primer_spec_input_all_circ.txt > out_spec_primer.txt
+	cat primer_spec_input_* > primer_spec_input_all_fusion.txt
+	/bin/bowtie-1.3.0-linux-x86_64/bowtie --tryhard -X1000 -v3 --quiet -x bowtie_index/$params.index_bowtie_name --threads ${task.cpus} --12 primer_spec_input_all_fusion.txt > out_spec_primer.txt
 	"""
 }
 
 
 process filter_primers {
 
-	gather_filter = in_filter.join(out_folding_template).join(out_folding_amplicon).join(all_primers_per_circ).groupTuple()
+	gather_filter = in_filter.join(out_folding_template).join(out_folding_amplicon).join(all_primers_per_fusion).groupTuple()
 
 	input:
-	tuple val(filter_id), path('circ_file_handle'), path('out_folding_template_handle'), path('out_folding_amplicon_handle'), path('all_primers_per_circ_handle') from gather_filter
+	tuple val(filter_id), path('fusion_file_handle'), path('out_folding_template_handle'), path('out_folding_amplicon_handle'), path('all_primers_per_fusion_handle') from gather_filter
 	file 'out_spec_primer_handle' from out_spec_primer
-
-	// val 'snp_filter_handle' from params.snp_filter
 	
 	output:
-	path('selected_primers_*') into results_per_circ
+	path('selected_primers_*') into results_per_fusion
 	path('all_primers') into out_dir
-	path('log_file_*') into log_file_per_circ
+	path('log_file_*') into log_file_per_fusion
 
 	"""
 	mkdir all_primers
-	07_filter.py -A circ_file_handle -P all_primers_per_circ_handle -b out_spec_primer_handle -t out_folding_template_handle -a out_folding_amplicon_handle -p $params.spec_filter
+	07_filter.py -A fusion_file_handle -P all_primers_per_fusion_handle -b out_spec_primer_handle -t out_folding_template_handle -a out_folding_amplicon_handle -p $params.spec_filter
 	08_gather_output.py -i all_primers/filtered_primers_*
 	"""
 }
@@ -305,11 +280,11 @@ process print_output {
 	publishDir params.output_dir, mode: 'copy'
 
 	input:
-	file 'results_per_circ*' from results_per_circ.collect()
-	file 'log_file_per_circ*' from log_file_per_circ.collect()
+	file 'results_per_fusion*' from results_per_fusion.collect()
+	file 'log_file_per_fusion*' from log_file_per_fusion.collect()
 	file 'start_time_file' from start_time
 	path 'all_primer_files' from out_dir.collect()
-	path 'all_circ_file' from all_cic
+	path 'all_fusion_file' from all_cic
 
 
 	output:
@@ -322,9 +297,9 @@ process print_output {
 	mkdir all_primers
 	cp all_primer_files*/* all_primers/
 	echo "fusions_seq	seq_id	primer_ID	FWD_primer	REV_primer	FWD_pos	FWD_length	REV_pos	REV_length	FWD_Tm	REV_Tm	FWD_GC	REV_GC	amplicon	PASS" > filtered_primers.txt
-	cat results_per_circ* >> filtered_primers.txt
-	echo "circ_ID	design	primer_found	total_primer_pairs	passed	failed_spec	failed_sec_str_amp" > log_file.txt
-	cat log_file_per_circ* >> log_file.txt
-	09_summary_run.py -l log_file.txt -s start_time_file -o . -a all_circ_file
+	cat results_per_fusion* >> filtered_primers.txt
+	echo "fusion_ID	design	primer_found	total_primer_pairs	passed	failed_spec	failed_sec_str_amp" > log_file.txt
+	cat log_file_per_fusion* >> log_file.txt
+	09_summary_run.py -l log_file.txt -s start_time_file -o . -a all_fusion_file
 	"""
 }

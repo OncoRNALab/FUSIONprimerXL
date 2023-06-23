@@ -9,9 +9,9 @@ args = parser.parse_args()
 input_file = args.i[0]
 
 sequence_file = open(input_file)
-circ_ID = str(input_file).split('_')[3]
-circ_ID = circ_ID.replace(".txt", "")
-output = open('output_NUPACK_amp_' + circ_ID + '.txt', 'a')
+fusion_ID = str(input_file).split('_')[3]
+fusion_ID = fusion_ID.replace(".txt", "")
+output = open('output_NUPACK_amp_' + fusion_ID + '.txt', 'a')
 
 for line in sequence_file:
 	tmp, tmp2, primer_ID, seq = line.split("_")
@@ -37,7 +37,7 @@ for line in sequence_file:
 
 	# Print out components of the result for the given complex
 	
-	output.write(circ_ID + '_' + primer_ID +'\t' + str(delta_g) + '\t' + str(str_not_ok) + '\t' + structure + '\n')
+	output.write(fusion_ID + '_' + primer_ID +'\t' + str(delta_g) + '\t' + str(str_not_ok) + '\t' + structure + '\n')
 	
 output.close()
 	

@@ -12,7 +12,7 @@ parser.add_argument("-f", nargs=1, required=True, help='shoud this step be inclu
 args = parser.parse_args()
 primer3_file = open(args.i[0])
 
-circ_ID = primer3_file.readline().replace("SEQUENCE_ID=", "")
+fusion_ID = primer3_file.readline().replace("SEQUENCE_ID=", "")
 
 
 primer3_file.close()
@@ -20,7 +20,7 @@ primer3_file.close()
 filter_on = args.f[0]
 primer3_file = open(args.i[0])
 
-primer3_file_new = open("primer3_file_" + circ_ID + ".txt", 'w')
+primer3_file_new = open("primer3_file_" + fusion_ID + ".txt", 'w')
 
 
 # copy complete file
