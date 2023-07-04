@@ -17,7 +17,7 @@ params.min_gc = 30
 params.max_gc = 80
 params.opt_gc = 50
 params.amp_min = 50
-params.amp_max = 0 // this param is set to 0, so that it can be adjusted depending on temp_l if the user does not supply amp_max
+params.amp_max = 200
 params.temp_str_filter = 'on'
 params.spec_filter = 'strict'
 
