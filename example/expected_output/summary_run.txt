@@ -1,17 +1,17 @@
-3 circRNA(s) were given as input
-	for 3 circRNA(s) (100.0 %), primer pair(s) were designed and filtered succesfully 
-	for 0 circRNA(s) (0.0 %), the (spliced) template sequence was to short and no primer pair(s) could be designed by primer3
-	for 0 circRNA(s) (0.0 %), no primer pair(s) could be designed by primer3
-	for 0 circRNA(s) (0.0 %), none of the primer pair(s) passed all filters
+3 fusionRNA(s) were given as input
+	for 3 fusionRNA(s) (100.0 %), primer pair(s) were designed and filtered succesfully 
+	for 0 fusionRNA(s) (0.0 %), the (spliced) template sequence was to short and no primer pair(s) could be designed by primer3
+	for 0 fusionRNA(s) (0.0 %), no primer pair(s) could be designed by primer3
+	for 0 fusionRNA(s) (0.0 %), none of the primer pair(s) passed all filters
 
 in total
-	20 primer pair(s) were designed and tested
-	20 (100.0 %) primer pairs passed all filters
+	15 primer pair(s) were designed and tested
+	14 (93.3 %) primer pairs passed all filters
 	0 (0.0 %) primer pair(s) failed the specificity filter
-	0 (0.0 %) primer pair(s) failed the secondary structure of the amplicon filter
+	1 (6.7 %) primer pair(s) failed the secondary structure of the amplicon filter
 
-see log file for more details per circRNA
+see log file for more details per fusionRNA
 
-run started at 31/01/2022 05:59:25 (UTC)
-run ended at 31/01/2022 06:00:35 (UTC)
-total run time: 70 seconds
+run started at 24/05/2024 09:16:48 (UTC)
+run ended at 24/05/2024 09:17:07 (UTC)
+total run time: 19 seconds
