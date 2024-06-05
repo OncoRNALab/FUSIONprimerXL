@@ -1,4 +1,4 @@
-circ_ID	chr	start	end	design	primer_found	total_primer_pairs	passed	failed_spec	failed_SNP	failed_sec_str_temp	failed_sec_str_amp
-circ2	chr1	17525	18061	1	1	5	5	0	0	0	0
-circ1	chr1	17232	17742	1	1	8	8	0	0	0	0
-circ0	chr1	16606	17055	1	1	7	7	0	0	0	0
+fusion_ID	chrom1	end	chrom2	start	design	primer_found	total_primers	passed	failed_spec	failed_SNP	failed_str_temp	failed_str_amp
+fusion1	chr1	137232	chr1	138152	1	1	1	1	0	0	0	0
+fusion2	chr1	17690	chr1	17980	1	1	4	4	0	0	0	0
+fusion0	chr1	16606	chr1	17055	1	1	10	9	0	0	0	1
