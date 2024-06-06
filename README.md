@@ -131,7 +131,17 @@ wget https://ftp.ensembl.org/pub/release-111/gtf/homo_sapiens/Homo_sapiens.GRCh3
 ```
 
 Step 2: transform the gtf file to a bed file (execute from base folder FUSIONprimerXL)
+The gtf file should contain following information in this order:
+
+| gene_id | gene_version | transcript_id | transcript_version | exon_number | etc. |
+| ------- | ------------ | ------------- | ------------------ | ----------- | ---- |
+It is important that transcript_id is on the third position, followed by transcript_version and exon_number.
+Whent this is not the case like for C. elegans, then the gtf cannot be converted to Known_exons.bed in the same way.
 ***NOTE: if you are doing this for C. elegans use ./bin/00_A_gtf_to_bed_C_elegans.py instead***
+
+| gene_id | transcript_id | exon_number | gene_name | etc. |
+| ------- | ------------- | ----------- | --------- | ---- |
+
 ```
 python3 ./bin/00_A_gtf_to_bed.py -i ./Homo_sapiens.GRCh38.111.gtf -o ./assets/GRCh38/Known_exons_GRCh38.111.bed ; rm ./Homo_sapiens.GRCh38.111.gtf
 ```
